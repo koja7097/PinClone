@@ -1,21 +1,22 @@
+import { Input } from "@chakra-ui/react";
 import { useState } from "react";
-import { Flex, Input, Button } from "@chakra-ui/react";
 
 export default function SearchBar({ onSearch }) {
   const [value, setValue] = useState("");
 
-  return (
-    <Flex justify="center" p={4} gap={2}>
-      <Input
-        placeholder="Search for inspiration..."
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        bg="gray.800"
-      />
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    onSearch(e.target.value); // instant Pinterest-style search
+  };
 
-      <Button colorScheme="pink" onClick={() => onSearch(value)}>
-        Search
-      </Button>
-    </Flex>
+  return (
+    <Input
+      placeholder="Search images..."
+      value={value}
+      onChange={handleChange}
+      bg="white"
+      color="black"
+      mb={4}
+    />
   );
 }

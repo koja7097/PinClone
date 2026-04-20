@@ -1,56 +1,61 @@
-import { Box } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import Header from "./components/Header";
-import SearchBar from "./components/SearchBar";
+import { Box, Flex } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import ImageGrid from "./components/ImageGrid";
-import Loader from "./components/Loader";
-import ImageModal from "./components/Modal"; 
+import ImageModal from "./components/Modal";
+import SkeletonGrid from "./components/SkeletonGrid";
+import Fab from "./components/Fab";
+import PageWrapper from "./components/PageWrapper";
+import SearchSuggestions from "./components/SearchSuggestions";
+
 import useInfiniteScroll from "./hooks/useInfiniteScroll";
 import { fetchImages } from "./services/unsplash";
-import "./App.css";
 
 function App() {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState(null);
 
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // FETCH
   useEffect(() => {
-    const loadImages = async () => {
+    const load = async () => {
       setLoading(true);
 
       try {
-        const newImages = await fetchImages(page, query);
+        const data = await fetchImages(page, query);
 
-        
-        if (!Array.isArray(newImages)) return;
+        if (!Array.isArray(data)) return;
 
         setImages((prev) => {
           const existing = new Set(prev.map((img) => img.id));
-          const filtered = newImages.filter(
+          const filtered = data.filter(
             (img) => !existing.has(img.id)
           );
           return [...prev, ...filtered];
         });
       } catch (err) {
-        console.error("Image load failed:", err);
+        console.error("Error loading images:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadImages();
+    load();
   }, [page, query]);
 
-  // Search resets feed
-  const handleSearch = (q) => {
+  // SEARCH
+  const handleSearch = (value) => {
     setImages([]);
     setPage(1);
-    setQuery(q);
+    setQuery(value);
   };
 
-  
+  // INFINITE SCROLL
   const observerRef = useInfiniteScroll(() => {
     if (!loading) {
       setPage((prev) => prev + 1);
@@ -59,19 +64,37 @@ function App() {
 
   return (
     <Box bg="gray.900" minH="100vh" color="white">
-      <Header />
-      <SearchBar onSearch={handleSearch} />
+      <Navbar onSearch={handleSearch} />
 
-      <ImageGrid images={images} onImageClick={setSelected} />
+      <SearchSuggestions onSelect={handleSearch} />
 
-      {loading && <Loader />}
+      <Flex>
+        <Sidebar onSelect={handleSearch} />
 
-      <div ref={observerRef} />
+        <Box flex="1">
+          <PageWrapper>
+            {loading && images.length === 0 ? (
+              <SkeletonGrid />
+            ) : (
+              <ImageGrid
+                images={images}
+                onImageClick={setSelected}
+              />
+            )}
+          </PageWrapper>
+
+          {loading && images.length > 0 && <SkeletonGrid />}
+
+          <div ref={observerRef} />
+        </Box>
+      </Flex>
 
       <ImageModal
         selected={selected}
         onClose={() => setSelected(null)}
       />
+
+      <Fab />
     </Box>
   );
 }

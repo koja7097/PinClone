@@ -10,7 +10,7 @@ export default function Header() {
       direction={{ base: "column", md: "row" }}
       gap={2}
     >
-      <Heading size="md">VisionVault ✨</Heading>
+      <Heading size="md">PinVision</Heading>
       <Text color="gray.400">Discover ideas that move you</Text>
     </Flex>
   );

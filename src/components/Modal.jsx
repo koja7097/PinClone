@@ -1,21 +1,29 @@
 import {
-  Modal,
+  Modal as ChakraModal,
   ModalOverlay,
   ModalContent,
   Image,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { useSwipeable } from "react-swipeable";
 
 export default function ImageModal({ selected, onClose }) {
+  const handlers = useSwipeable({
+    onSwipedDown: onClose,
+    onPinch: onClose,
+  });
+
   return (
-     <Modal isOpen={!!selected} onClose={onClose} size="xl" isCentered>
+    <ChakraModal isOpen={!!selected} onClose={onClose} size="xl" isCentered>
       <ModalOverlay />
 
-      <ModalContent as={motion.div} initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+      <ModalContent {...handlers}>
         {selected && (
-          <Image src={selected.urls.regular} borderRadius="md" />
+          <Image
+            src={selected.urls.regular}
+            borderRadius="md"
+          />
         )}
       </ModalContent>
-    </Modal>
+    </ChakraModal>
   );
 }

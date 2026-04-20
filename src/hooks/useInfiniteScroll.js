@@ -4,17 +4,21 @@ export default function useInfiniteScroll(callback) {
   const observerRef = useRef();
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        callback();
-      }
-    });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          callback();
+        }
+      },
+      { threshold: 1 }
+    );
 
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
+    const current = observerRef.current;
+    if (current) observer.observe(current);
 
-    return () => observer.disconnect();
+    return () => {
+      if (current) observer.unobserve(current);
+    };
   }, [callback]);
 
   return observerRef;
